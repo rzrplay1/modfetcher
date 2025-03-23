@@ -1,12 +1,13 @@
 import requests
+import os
 def fetch_mod(slug, minecraft_version, loader):# modrinth
     project_response = requests.get(f"https://api.modrinth.com/v2/project/{slug}")
     if project_response.status_code == 200:
-        project_id = project_response.json()["id"]
-        print("Project ID:", project_id)
-        version_response = requests.get(f"https://api.modrinth.com/v2/project/{project_id}/version")
+        print(f'Mod Title: {project_response.json()["title"]}')
+        version_response=requests.get(f"https://api.modrinth.com/v2/project/{slug}/version")
         if version_response.status_code == 200:
             versions = version_response.json()
+            print(f'Mod author: {requests.get(f'https://api.modrinth.com/v2/user/{dict(versions[0])['author_id']}').json()['username']}')
             desired_version = next(
                 (v for v in versions if minecraft_version in v["game_versions"] and loader in v["loaders"]),
                 None
@@ -26,6 +27,7 @@ def fetch_mod(slug, minecraft_version, loader):# modrinth
     else:
         return f"fail_Failed to fetch project ID. mod:{slug}"
 slug_list=[# a list of mod names to fetch
+    
     'ad-astra',
     'additional-placements',
     'alexs-mobs',
@@ -63,10 +65,11 @@ slug_list=[# a list of mod names to fetch
     'the-undergarden',
     'vavs'
 ]
+os.mkdir('output')
 for mod in slug_list:
     a=fetch_mod(mod,'1.20.1','forge')
     b=a
-    if a[:4]=='fail':b=f'\n{b}\n'
+    if a[:4]=='fail':b=f'\n{b[5:]}\n'
     print(b)
     if not a[:4]=='fail':
         with open(f'output/{a[a.find('/versions/')+19:]}', 'wb') as file:
